@@ -178,30 +178,25 @@ function buildCommands(code) {
     expanded = expanded.replace(/\r\n?/g, '\n');
 
     // Expand brace for-loops iteratively (supports nesting depth in a simple way)
-    const braceFor = /for\s*\(\s*let\s+i\s*=\s*0\s*;\s*i\s*<\s*(\d{1,3})\s*;\s*i\+\+\s*\)\s*\{([\s\S]*?)\}/m;
+    const braceFor = /for\s*\(\s*let\s+i\s*=\s*0\s*;\s*i\s*<\s*(\d{1,2})\s*;\s*i\+\+\s*\)\s*\{([\s\S]*?)\}/m;
     let guard = 0;
-    while (braceFor.test(expanded) && guard < 50) {
+    while (braceFor.test(expanded) && guard < 20) {
         expanded = expanded.replace(braceFor, (m, nStr, body) => {
             const n = parseInt(nStr,10);
-            if (n > 50) throw new Error('Loop upper bound too large (max 50).');
+            if (n > 20) throw new Error('Loop upper bound too large (max 20).');
             return Array.from({length:n}, () => body).join('\n');
         });
         guard++;
     }
-    if (guard === 50) throw new Error('Loop expansion depth limit reached.');
+    if (guard === 20) throw new Error('Loop expansion depth limit reached.');
 
     // Expand single-line for without braces: for (let i = 0; i < N; i++) moveRight();
-    const singleLineFor = /for\s*\(\s*let\s+i\s*=\s*0\s*;\s*i\s*<\s*(\d{1,3})\s*;\s*i\+\+\s*\)\s*([^;\n]+);?/;
-    guard = 0;
-    while (singleLineFor.test(expanded) && guard < 50) {
-        expanded = expanded.replace(singleLineFor, (m, nStr, stmt) => {
-            const n = parseInt(nStr,10);
-            if (n > 50) throw new Error('Loop upper bound too large (max 50).');
-            return Array.from({length:n}, () => stmt.trim() + ';').join('\n');
-        });
-        guard++;
-    }
-    if (guard === 50) throw new Error('Single-line loop expansion depth limit reached.');
+    const singleLineFor = /for\s*\(\s*let\s+i\s*=\s*0\s*;\s*i\s*<\s*(\d{1,2})\s*;\s*i\+\+\s*\)\s*([^;\n\{]+);?/g;
+    expanded = expanded.replace(singleLineFor, (m, nStr, stmt) => {
+        const n = parseInt(nStr,10);
+        if (n > 20) throw new Error('Loop upper bound too large (max 20).');
+        return Array.from({length:n}, () => stmt.trim() + ';').join('\n');
+    });
 
     // After expansion, reject any remaining 'for (' occurrences
     if (/for\s*\(/.test(expanded)) {
@@ -210,16 +205,14 @@ function buildCommands(code) {
 
     // Now translate movement calls into command pushes
     const commands = [];
-    expanded
+    const processedCode = expanded
         .replace(/\/\/.*$/gm, '') // strip line comments
+        .replace(/\/\*[\s\S]*?\*\//g, '') // strip block comments
         .replace(/moveUp\(\)\s*;?/g,   () => { commands.push('up');   return ''; })
         .replace(/moveDown\(\)\s*;?/g, () => { commands.push('down'); return ''; })
         .replace(/moveLeft\(\)\s*;?/g, () => { commands.push('left'); return ''; })
         .replace(/moveRight\(\)\s*;?/g,() => { commands.push('right');return ''; });
 
-    // Validate no unexpected tokens (very lightweight check)
-    const leftover = expanded.replace(/\s+/g,'').replace(/(moveUp|moveDown|moveLeft|moveRight)|up|down|left|right|;|'|"|\(|\)|\{|\}|\.|,/g,'');
-    // (We already consumed moves; leftover should be empty or harmless)
     return commands;
 }
 
@@ -292,9 +285,9 @@ function resetMaze() {
     runBtn.disabled=false;
 }
 
-// Event listeners
-runBtn.addEventListener('click', executeUserCode);
-resetBtn.addEventListener('click', resetMaze);
+// Event listeners - fixed to properly check if elements exist
+if (runBtn) runBtn.addEventListener('click', executeUserCode);
+if (resetBtn) resetBtn.addEventListener('click', resetMaze);
 
 // Console helper functions for players
 window.showMaze = function() {
@@ -321,10 +314,15 @@ window.hint = function() {
     console.log('🤖 Try: showPosition() to see robot status');
 };
 
-// Initialize the maze on page load
+// Initialize the maze on page load - fixed DOM ready check
 document.addEventListener('DOMContentLoaded', function() {
-    cloneMaze();
-    initMaze();
-    updateStatus('Welcome! Collect the key, open the door, reach the flag. Write code and click Run.', '');
-    console.log('\n🎮 Console commands: hint(), showMaze(), showPosition(), resetMaze()');
+    // Ensure all DOM elements exist before initializing
+    if (mazeGrid && codeInput && runBtn && resetBtn && statusDiv) {
+        cloneMaze();
+        initMaze();
+        updateStatus('Welcome! Collect the key, open the door, reach the flag. Write code and click Run.', '');
+        console.log('\n🎮 Console commands: hint(), showMaze(), showPosition()');
+    } else {
+        console.error('Required DOM elements not found');
+    }
 });
