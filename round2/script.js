@@ -31,7 +31,10 @@ const MOVE_LIMIT = 100;
 const mazeGrid = document.getElementById('mazeGrid');
 const codeInput = document.getElementById('codeInput');
 const runBtn = document.getElementById('runBtn');
+const liveBtn = document.getElementById('liveBtn');
 const resetBtn = document.getElementById('resetBtn');
+let liveMode = false;
+let liveCancel = false;
 const statusDiv = document.getElementById('statusDiv');
 
 // Initialize maze display
@@ -288,6 +291,57 @@ function resetMaze() {
 // Event listeners - fixed to properly check if elements exist
 if (runBtn) runBtn.addEventListener('click', executeUserCode);
 if (resetBtn) resetBtn.addEventListener('click', resetMaze);
+if (liveBtn) liveBtn.addEventListener('click', toggleLiveMode);
+
+function toggleLiveMode(){
+    if (!liveMode){
+        liveMode = true; liveCancel = false;
+        runBtn.disabled = true;
+        liveBtn.textContent = '⏹ Stop Live';
+        liveExecute();
+    } else {
+        liveCancel = true;
+    }
+}
+
+function parseSingleLine(line){
+    // allow a single movement call or a simple for-line
+    line = line.trim();
+    if (!line) return [];
+    if (/^for\s*\(/.test(line)) {
+        // reuse buildCommands limited to single line
+        try { return buildCommands(line); } catch(e){ updateStatus('❌ Live loop rejected: '+e.message,'error'); return []; }
+    }
+    const cmds = [];
+    if (/moveUp\(\)/.test(line)) cmds.push('up');
+    if (/moveDown\(\)/.test(line)) cmds.push('down');
+    if (/moveLeft\(\)/.test(line)) cmds.push('left');
+    if (/moveRight\(\)/.test(line)) cmds.push('right');
+    if (!cmds.length) console.log('ℹ️ Ignored line (no command):', line);
+    return cmds;
+}
+
+async function liveExecute(){
+    const lines = codeInput.value.split(/\n/);
+    updateStatus('▶ Live mode: executing lines...', 'info');
+    for (let idx=0; idx<lines.length; idx++) {
+        if (liveCancel) { updateStatus('⏹ Live mode stopped.', 'info'); break; }
+        const raw = lines[idx];
+        const commands = parseSingleLine(raw);
+        if (commands.length){
+            updateStatus(`▶ Line ${idx+1}: ${raw}`, 'info');
+            for (const c of commands){
+                let ok=false; switch(c){case 'up':ok=moveUp();break;case 'down':ok=moveDown();break;case 'left':ok=moveLeft();break;case 'right':ok=moveRight();break;}
+                if(!ok){ updateStatus(`❌ Blocked on line ${idx+1} (${c})`, 'error'); liveCancel=true; break; }
+                updateRobotPosition();
+                if (checkCellActions()){ liveCancel=true; break; }
+                await new Promise(r=>setTimeout(r,300));
+            }
+        }
+        if (liveCancel) break;
+    }
+    liveMode=false; liveBtn.textContent='▶ Live Run'; runBtn.disabled=false; if(!liveCancel) updateStatus('✅ Live mode finished.', 'success');
+}
 
 // Console helper functions for players
 window.showMaze = function() {
