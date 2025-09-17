@@ -1,0 +1,177 @@
+/* WebDecryption Round 1 - Minimal CSS Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+}
+
+.header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 2.2em;
+}
+
+.header h2 {
+    color: #7f8c8d;
+    margin-bottom: 30px;
+    font-size: 1.3em;
+    font-weight: 300;
+}
+
+/* Hidden data divs - not visible but present in DOM */
+div[data-pos1], div[data-pos2], div[data-pos3], div[data-pos4], div[data-pos5],
+div[data-pos6], div[data-pos7], div[data-pos8], div[data-pos9], div[data-pos10],
+div[data-noise], div[data-fake], div[data-decoy], div[data-random], div[data-fake2],
+div[data-noise2], div[data-decoy2], div[data-random2] {
+    display: none;
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.hint {
+    color: #2980b9;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+.dev-hint {
+    color: #8e44ad;
+    font-size: 0.95em;
+    margin-top: 10px;
+    font-style: italic;
+}
+
+.instructions {
+    color: #34495e;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+/* Hidden username styling - scattered throughout page */
+.invisible-text {
+    color: transparent;
+    font-size: 14px;
+    user-select: text;
+    cursor: text;
+    padding: 2px 4px;
+    background: transparent;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    display: inline;
+}
+
+.invisible-text:hover {
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px dashed #e74c3c;
+    box-shadow: 0 0 5px rgba(231, 76, 60, 0.3);
+}
+
+/* Login form styling */
+.login-form {
+    margin: 30px 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.login-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    width: 100%;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+}
+
+.login-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Message styling */
+.message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.info {
+    background: #cce7ff;
+    color: #004085;
+    border: 1px solid #b3d7ff;
+}
+
+.footer {
+    margin-top: 30px;
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
